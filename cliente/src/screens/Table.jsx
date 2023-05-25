@@ -6,32 +6,38 @@ export default function Home() {
 	const { handleColumnaChange, handleInputChange, handleFileUpload, columnaIndex, columnas, tableHTML, tableHTML2, filePath } = useContext(Context)
 
 	return (
-		<>
-			<header>
-				<div>
-					<h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">Subir archivo</h1>
-				</div>
+		<header>
 
-				{
-					tableHTML ?
-						<>
-							<label htmlFor="columna">Seleccionar columna:</label>
-							<select id="columna" value={columnaIndex} onChange={handleColumnaChange}>
-								{columnas.map((columna, index) => (
-									<option value={columna} key={index}>
-										{columna}
-									</option>
-								))}
-							</select>
-							<div className='table' dangerouslySetInnerHTML={{ __html: tableHTML }}></div>
-						</>
-						:
-						<>
-							<input type="text" value={filePath} onChange={handleInputChange} placeholder="Ruta absoluta del archivo" />
-							<button onClick={handleFileUpload}>Enviar</button>
-						</>
-				}
-			</header>
-		</>
+			{
+				tableHTML ?
+					<div className='py-5'>
+						<div>
+							<h1 className="px-5 text-2xl font-bold leading-tight tracking-tight text-gray-900 pb-5">Tabla de Datos</h1>
+						</div>
+						<div className='table px-5' dangerouslySetInnerHTML={{ __html: tableHTML }}></div>
+					</div>
+					:
+					<div className='flex justify-center mt-5'>
+						<div>
+							<div className='flex justify-center'>
+								<h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900">Cargar archivo</h1>
+
+							</div>
+							<input type="text"
+								className='p-2.5 w-[500px] mt-3 mb-2 border border-gray-400 block'
+								value={filePath}
+								onChange={handleInputChange}
+								placeholder="Ruta absoluta del archivo"
+							/>
+							<button
+								onClick={handleFileUpload}
+								className='w-[500px] bg-red-500 p-2.5 text-white'
+							>
+								Subir
+							</button>
+						</div>
+					</div>
+			}
+		</header>
 	)
 }

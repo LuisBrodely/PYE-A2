@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import axios from "axios";
 
 export const Context = createContext();
@@ -27,6 +27,7 @@ export const ContextProvider = ({ children }) => {
             .then(response => {
                 // Manejar la respuesta del servidor
                 setTableHTML(response.data.table_html);
+                setColumnas(response.data.columns)
             })
             .catch(error => {
                 // Ocurrió un error al enviar la ruta del archivo
@@ -42,16 +43,26 @@ export const ContextProvider = ({ children }) => {
         axios.post('http://localhost:5000/get_column_data', columnData)
             .then(response => {
                 // Manejar la respuesta del servidor
-                const imageSource = `data:image/png;base64, ${response.data.image1}`;
-                const imageSource2 = `data:image/png;base64, ${response.data.image2}`;
-                const imageSource3 = `data:image/png;base64, ${response.data.image3}`;
-                const imageSource4 = `data:image/png;base64, ${response.data.image4}`;
-                const imageSource5 = `data:image/png;base64, ${response.data.image5}`;
-                setChartImage(imageSource);
-                setChartImage2(imageSource2)
-                setChartImage3(imageSource3)
-                setChartImage4(imageSource4)
-                setChartImage5(imageSource5)
+                if(response.data.image1){
+                    const imageSource = `data:image/png;base64, ${response.data.image1}`;
+                    const imageSource2 = `data:image/png;base64, ${response.data.image2}`;
+                    setChartImage(imageSource);
+                    setChartImage2(imageSource2)
+                    setChartImage3('')
+                    setChartImage4('')
+                    setChartImage5('')
+
+                } else {
+                    const imageSource3 = `data:image/png;base64, ${response.data.image3}`;
+                    const imageSource4 = `data:image/png;base64, ${response.data.image4}`;
+                    const imageSource5 = `data:image/png;base64, ${response.data.image5}`;
+                    setChartImage3(imageSource3)
+                    setChartImage4(imageSource4)
+                    setChartImage5(imageSource5)
+                    setChartImage('')
+                    setChartImage2('')
+                }
+                
             })
             .catch(error => {
                 // Ocurrió un error al enviar la ruta del archivo
@@ -69,25 +80,9 @@ export const ContextProvider = ({ children }) => {
                 console.error(error);
             });
     };
-    useEffect(() => {
-        obtenerColumnasTabla();
-        console.log(datosColumna)
-    }, [tableHTML]);
-
-    const obtenerColumnasTabla = () => {
-        if (tableHTML !== null) {
-            const tabla = document.getElementsByClassName('dataframe');
-            var tabla2 = tabla[0];
-            console.log(tabla2)
-            const encabezados = tabla2.querySelectorAll('th');
-            const columnasTabla = Array.from(encabezados).map((th) => th.innerText);
-            setColumnas(columnasTabla);
-        }
-    };
 
     return (
         <Context.Provider value={{
-            obtenerColumnasTabla,
             handleColumnaChange,
             handleFileUpload,
             handleInputChange,

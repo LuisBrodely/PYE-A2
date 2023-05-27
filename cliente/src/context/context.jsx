@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
 export const Context = createContext();
@@ -7,6 +7,8 @@ export const ContextProvider = ({ children }) => {
     const [filePath, setFilePath] = useState('');
     const [tableHTML, setTableHTML] = useState(null);
     const [tableHTML2, setTableHTML2] = useState(null);
+    const [tableHTML3, setTableHTML3] = useState(null);
+    const [tableHTML4, setTableHTML4] = useState(null);
     const [columnaIndex, setColumnaIndex] = useState(0); // Estado para almacenar el índice de la columna seleccionada
     const [columnas, setColumnas] = useState([]); // Estado para almacenar las columnas de la tabla
     const [datosColumna, setDatosColumna] = useState([]); // Estado para almacenar los datos de la columna seleccionada
@@ -40,6 +42,8 @@ export const ContextProvider = ({ children }) => {
             file_path: filePath,
             column_name: event.target.value
         };
+        const a = event.target.value
+        handleColumnaChange2(a)
         axios.post('http://localhost:5000/get_column_data', columnData)
             .then(response => {
                 // Manejar la respuesta del servidor
@@ -72,10 +76,34 @@ export const ContextProvider = ({ children }) => {
             .then(response => {
                 // Manejar la respuesta del servidor
                 setTableHTML2(response.data.html_table);
-                console.log(response)
             })
             .catch(error => {
                 setTableHTML2(null)
+                // Ocurrió un error al enviar la ruta del archivo
+                console.error(error);
+            });
+        axios.post('http://localhost:5000/get_stats', columnData)
+            .then(response => {
+                // Manejar la respuesta del servidor
+                console.log(response.data)
+                setTableHTML3(response.data.html_table);
+                console.log(response.data)
+            })
+            .catch(error => {
+                setTableHTML3(null)
+                // Ocurrió un error al enviar la ruta del archivo
+                console.error(error);
+            });
+    };
+    const handleColumnaChange2 = (a) => {
+        axios.post('http://localhost:5000/get_medianas', {file_path: filePath, column_name: a, porcentaje: 30})
+            .then(response => {
+                // Manejar la respuesta del servidor
+                setTableHTML4(response.data.html_table);
+                console.log(response.data)
+            })
+            .catch(error => {
+                setTableHTML4(null)
                 // Ocurrió un error al enviar la ruta del archivo
                 console.error(error);
             });
@@ -96,7 +124,9 @@ export const ContextProvider = ({ children }) => {
             chartImage2,
             chartImage3,
             chartImage4,
-            chartImage5
+            chartImage5,
+            tableHTML3,
+            tableHTML4
         }}>
             {children}
         </Context.Provider>

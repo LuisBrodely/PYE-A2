@@ -105,6 +105,119 @@ def generate_polygon_image(df, frequency, index):
 
     return image_base64
 
+
+def arithmetic_mean(column):
+    sum_val = sum(column)
+    mean = sum_val / len(column)
+    return mean
+
+def trimmed_mean(data, trim_percentage):
+    sorted_data = sorted(data)
+    trim_count = int(len(data) * trim_percentage / 100 / 2)
+    trimmed_data = sorted_data[trim_count:-trim_count]
+    trimmed_mean = sum(trimmed_data) / len(trimmed_data)
+    return trimmed_mean
+
+def median(data):
+    sorted_data = sorted(data)
+    n = len(sorted_data)
+    if n % 2 == 1:
+        median_val = sorted_data[n // 2]
+    else:
+        median_val = (sorted_data[n // 2 - 1] + sorted_data[n // 2]) / 2
+    return median_val
+
+def mode(data):
+    count = Counter(data)
+    mode_val = max(count, key=count.get)
+    mode_frequency = count[mode_val]
+    modes = [value for value, frequency in count.items() if frequency == mode_frequency]
+    if len(modes) == len(count):
+        return "No mode"
+    else:
+        return modes
+
+def data_range(data):
+    max_val = max(data)
+    min_val = min(data)
+    data_range_val = max_val - min_val
+    return data_range_val
+
+def variance(data):
+    mean = sum(data) / len(data)
+    squared_diff = [(x - mean) ** 2 for x in data]
+    variance_val = sum(squared_diff) / len(data)
+    return variance_val
+
+def standard_deviation(data):
+    variance_val = variance(data)
+    std_deviation = math.sqrt(variance_val)
+    return std_deviation
+
+def calculate_skewness(data):
+    n = len(data)
+    mean = sum(data) / n
+    std_deviation = math.sqrt(sum((x - mean) ** 2 for x in data) / n)
+    third_moment_central = sum((x - mean) ** 3 for x in data) / n
+    skewness = third_moment_central / (std_deviation ** 3)
+    return skewness
+
+@app.route('/get_stats', methods=['POST'])
+def get_statistics():
+    data = request.get_json()
+    file_path = data.get('file_path')
+    column_name = data.get('column_name')
+
+    df = pd.read_csv(file_path, encoding='latin-1', low_memory=False)
+    data_column = df[column_name].tolist()
+    max_val = max(data_column)
+    min_val = min(data_column)
+
+    if isinstance(data_column[0], str):
+        results = {
+            'Mode': mode(data_column),
+        }
+    elif isinstance(data_column[0], int) or isinstance(data_column[0], float):
+        results = {
+            'Median': median(data_column),
+            'Mode': mode(data_column),
+            'Range': data_range(data_column),
+            'Variance': variance(data_column),
+            'Standard Deviation': standard_deviation(data_column),
+            'Minimum': min_val,
+            'Maximum': max_val,
+            'Skewness': calculate_skewness(data_column)
+        }
+
+    df = pd.DataFrame(results, index=[0])
+    html_table = df.to_html(index=False)
+
+    return jsonify({'html_table': html_table})
+
+@app.route('/get_medians', methods=['POST'])
+def get_medians():
+    data = request.get_json()
+    file_path = data.get('file_path')
+    column_name = data.get('column_name')
+    trim_percentage = data.get('trim_percentage')
+
+    df = pd.read_csv(file_path, encoding='latin-1', low_memory=False)
+    data_column = df[column_name].tolist()
+
+    if isinstance(data_column[0], str):
+        results = {
+        }
+    elif isinstance(data_column[0], int) or isinstance(data_column[0], float):
+        results = {
+            'Arithmetic Mean': arithmetic_mean(data_column),
+            'Trimmed Mean': trimmed_mean(data_column, trim_percentage),
+        }
+
+    df = pd.DataFrame(results, index=[0])
+    html_table = df.to_html(index=False)
+
+    return jsonify({'html_table': html_table})
+
 def generate_histogram_image(column_name, df):
     fig = plt.figure()
     column_data = df[column_name]
